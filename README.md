@@ -41,8 +41,8 @@ following database configuration:
 ```
 spring.datasource.driver-class-name=org.postgreql.Driver
 spring.datasource.url=jdbc:postgresql://localhost:3306/questiondb
-spring.datasource.username=telusko_ms
-spring.datasource.username=telusko_ms!
+spring.datasource.username=******
+spring.datasource.username=******
 spring.jpa.hibernate.ddl-auto=update
 spring.jpa.properties.hibernate.dialect = org.hibernate.dialect.PostgreSQLDialect
 ```
@@ -52,8 +52,8 @@ Else if you are using gradle's quizapp/build/resources/main/application.properti
 ```
 # Database connection settings
 spring.datasource.url=jdbc:mysql://localhost:3306/questiondb
-spring.datasource.username=telusko_ms
-spring.datasource.password=telusko_ms!
+spring.datasource.username=******
+spring.datasource.password=******
 
 # Specify the DBMS
 spring.jpa.database = MYSQL
@@ -161,7 +161,7 @@ We also Autowire the Questiondao so that I can call it's methods (findAll).
 public class QuestionService {
 
     @Autowired
-    Questiondao questiondao;
+    Questionddao questiondao;
     public ResponseEntity<List<Question>> getAllQuestions() {
         try {
             return new ResponseEntity<>(questiondao.findAll(), HttpStatus.OK);
