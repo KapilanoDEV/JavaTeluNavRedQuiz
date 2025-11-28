@@ -2,6 +2,7 @@
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
 
+- [This is the monolithic application](#this-is-the-monolithic-application)
 - [Question App](#question-app)
   - [Configuration](#configuration)
     - [Database connectivity](#database-connectivity)
@@ -28,6 +29,9 @@
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 #[Telusko Microservice Tutorial using Java (question-service, quiz-service, quizapp)](https://youtube.com/playlist?list=PLsyeobzWxl7rRyGcqgZ3MP5pWGPwUvprI&si=e8pFZoD5_qx7kimC)
+
+# This is the monolithic application
+
 # Question App
 ## Configuration
 
@@ -147,9 +151,9 @@ argument to PathVariable.
 
 #### POST method
 
-pring says you just specify the
-// JSON I will convert that into an object but you have to also mention a request body because
-// you are sending this data in the request from the client side to the server
+Spring says you just specify the JSON I will convert that into an object but you have to also mention a request 
+body because you are sending this data in the request from the client side 
+to the server
 ```
     @PostMapping("addQuestion")
     public ResponseEntity<String> addQuestion(@RequestBody Question question){//Spring says you just specify the
