@@ -51,7 +51,7 @@ public class QuizService {
     }
 
     public ResponseEntity<Integer> calculateResult(int id, List<Response> responses) {
-        Optional<Quiz> quiz = quizdao.findById(id);
+        Optional<Quiz> quiz = quizdao.findById(id); // id=1, category=Java, quiz_title=JQuiz
 
         List<Question> questionList = quiz.get().getQuestionList();
         int i = 0;
