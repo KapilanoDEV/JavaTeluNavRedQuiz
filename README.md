@@ -15,6 +15,9 @@
       - [POST method](#post-method-1)
     - [Model layer](#model-layer)
     - [DAO layer](#dao-layer)
+    - [Direct Database Execution](#direct-database-execution)
+      - [Key Differences: JPQL vs. Native Query](#key-differences-jpql-vs-native-query)
+    - [Code Breakdown](#code-breakdown)
 - [Quiz App](#quiz-app)
     - [Controller layer](#controller-layer-1)
     - [Service Layer](#service-layer)
@@ -128,7 +131,7 @@ return questionService.getAllQuestions();
 ```
 In the controller the {category} comes from the URL as a parameter.
 You need the @PathVariable annotation to pass it as an argument to the
-getQuestionByCategory method.
+getQuestionsByCategory method.
 
 ```
     @GetMapping("category/{category}")
@@ -174,7 +177,7 @@ We also Autowire the Questiondao so that I can call it's methods (findAll).
 The List<Question> is a list of questions in a JSON format. But instead we can return a ResponseEntity
 object that has 2 parameters; the data returned and the status code. We put that in the
 try block but if there is an exception then it will print the error on the console. What is something goes wrong in the
-try? Then the try would not return. Hence, the need for the BAD_REQUEST.
+try? Then return an empty ArrayList and an HTTP.BAD_REQUEST.
 ```
 @Service
 public class QuestionService {
@@ -296,15 +299,47 @@ public interface Questiondao extends JpaRepository<Question,Integer> {
     List<Question> findRandomByCategory(String category, int numQ);
 }
 ```
+In Spring Data JPA, `nativeQuery = true` tells the framework to execute the exact SQL string provided directly in the database, bypassing the Java Persistence Query Language (JPQL) parser.
+
+Here is a breakdown of what a native query means and does in this context:
+
+### Direct Database Execution
+
+**Standard SQL:** The query uses raw SQL syntax specific to your database (e.g., MySQL, PostgreSQL) rather than Java entity names.
+
+**No JPQL Mapping:** It targets actual database table names (`question`) and column names, not Java class entities or field names.
+
+**Database Functions:** It allows the use of database-specific functions like `RAND()` (MySQL) which do not exist in standard JPQL.
+
+#### Key Differences: JPQL vs. Native Query
+
+Here is the feature comparison organized into a clean, readable table:
+
+| Feature | JPQL (`nativeQuery = false`) | Native Query (`nativeQuery = true`) |
+| --- | --- | --- |
+| **Target** | Java Entities and fields | Database Tables and columns |
+| **Portability** | Database independent | Database specific (harder to switch DBs) |
+| **Functions** | Restricted to JPA standard | Any function supported by your DB |
+| **Validation** | Checked at application startup | Checked only when executed by the DB |
+
+### Code Breakdown
+
+**SELECT * FROM question:** Selects all columns from the actual database table named `question`.
+
+**q.category = :category:** Filters by the column `category` using a named parameter.
+
+**ORDER BY RAND():** Uses the database's random function to shuffle rows.
+
+**LIMIT :numQ:** Restricts the result count using a named parameter (supported natively in modern Spring Data JPA).
 
 All the CRUD operations will be handled by JPA. It takes the name of the class that 
 maps to the table name and the Primary key type.
 Remember in your service you had?
 
-```
+```java
 try {
-            return new ResponseEntity<>(questiondao.findAll(), HttpStatus.OK);
-        }catch 
+    return new ResponseEntity<>(questiondao.findAll(), HttpStatus.OK);
+    }catch 
 ```
 You don't need to create the findAll in your DAO class since 
 JPA gives that to you without you having to implement it since it
@@ -314,9 +349,17 @@ In this example you do not need to write any HQL (Hibernate Query Language)
 or JPQL (JPA Query Language) since JPA is smart enough to know that category argument
 matches a column in the table.
 
-```
+```java
 List<Question> findByCategory(String category); //JPA is smart enough to work out you want
     // everything with that category
+```
+
+**Question model Entity Field:** category -> **SQL Column:** category
+
+When you call `findByCategory()`, Hibernate automatically translates it into this SQL statement under the hood:
+
+```sql
+SELECT * FROM product WHERE category = ?;
 ```
 
 # Quiz App
