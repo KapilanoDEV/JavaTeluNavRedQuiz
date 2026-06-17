@@ -4,6 +4,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import lombok.Data;
 
+// This model is needed by the
+
 @Entity
 @Data
 public class QuestionWrapper {

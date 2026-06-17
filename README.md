@@ -568,4 +568,71 @@ private int id;
 ```
 
 The reason for the QuestionWrapper is to have a model for a class that is the same
-as the Question model but without the right answer. This is used for when we get the quiz.
+as the Question model but without the right answer. This is used for when we get the quiz. This is separating Database Core Entities from your Data Transfer Objects (DTOs).
+
+Telusko used the `@Entity` annotationon QuestionWrapper.
+
+Why should you remove `@Entity`?
+
+The `@Entity` annotation tells Hibernate that this class directly maps to a physical database table layout. If you leave `@Entity` active on `QuestionWrapper`, Hibernate will try to create a table named `question_wrapper` in your database on application startup.
+Since your wrapper is strictly a temporary data transport container meant for HTTP traffic, it should not be tracked by your persistence engine. Removing `@Entity` (and optionally removing `@Id`) turns it into a pure DTO (Data Transfer Object).
+
+### Production-Ready Safety Upgrade for getQuiz
+
+```java
+public ResponseEntity<List<QuestionWrapper>> getQuiz(int id) {
+    return quizdao.findById(id)// Returns an Optional<Quiz>
+            .map(quiz -> {
+                List<QuestionWrapper> wrappers = quiz.getQuestionList().stream()
+                        .map(qn -> new QuestionWrapper(
+                                qn.getId(),
+                                qn.getQuestionTitle(),
+                                qn.getOption1(),
+                                qn.getOption2(),
+                                qn.getOption3(),
+                                qn.getOption4()
+                        ))
+                        .toList();
+                return new ResponseEntity<>(wrappers, HttpStatus.OK);
+            })// Transforms Optional<Quiz> into Optional<ResponseEntity>
+            // If the quiz doesn't exist in the database, safely return a 404 Not Found
+            .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND)); // Fallback if empty
+}
+```
+
+
+In real-world applications, calling `.get()` directly on an `Optional` without verifying its presence with `.isPresent()` can cause a `NoSuchElementException` crash if someone requests an invalid quiz ID (e.g., `/getQuiz/9999`).
+You can make your method safer and more expressive by handling that missing case gracefully using `.map()` and `.orElse()` (or `.orElseThrow()`):
+
+
+The reason `.orElse()` works here without a stream is because it belongs to the `Optional` class, not the Stream API.
+While Optional and Stream are both part of Java 8+ functional programming and look similar because they use methods like `.map()`, they serve entirely different purposes.
+
+#### The Conceptual Difference
+
+A Stream is a pipe designed to process a collection of many elements sequentially.
+An Optional is a wrapper box designed to contain either exactly one object or nothing at all (null). It is a tool to prevent NullPointerException crashes.
+
+#### How `.orElse()` Operates on an Optional
+Think of an Optional as a gift box. You call `.orElse()` to define your backup plan in case the box turns out to be empty.
+When you chain `.map()` and `.orElse()` on an Optional like this:
+
+```java
+return quizdao.findById(id) // Returns an Optional<Quiz>
+        .map(quiz -> {
+            // ... transformation logic ...
+            return new ResponseEntity<>(wrappers, HttpStatus.OK);
+        }) // Transforms Optional<Quiz> into Optional<ResponseEntity>
+        .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND)); // Fallback if empty
+```
+
+The execution follows this specific logic branch:
+1. quizdao.findById(id) runs.
+- If the quiz exists, the box contains a Quiz object.
+- If the quiz does not exist, it returns an empty box (Optional.empty()).
+2. `.map(...)` checks the box:
+- If a Quiz is present: It opens the box, runs your transformation code inside the curly braces to convert the quiz into a ResponseEntity, and puts that new response entity back inside an Optional box.
+- If the box is empty: It skips your transformation logic entirely and just passes along the empty Optional box.
+3. `.orElse(...)` looks at the final box:
+- If the box is full: It unwraps the object inside (your successful 200 OK response) and returns it.
+- If the box is empty: It ignores the box entirely and returns your fallback value (the 404 NOT FOUND response) instead.

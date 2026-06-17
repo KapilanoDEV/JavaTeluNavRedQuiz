@@ -38,16 +38,24 @@ public class QuizService {
     }
 
     public ResponseEntity<List<QuestionWrapper>> getQuiz(int id) {
-        Optional<Quiz> result = quizdao.findById(id);
+        return quizdao.findById(id)
+                .map(quiz -> {
+                    List<QuestionWrapper> wrappers = quiz.getQuestionList().stream()
+                            .map(qn -> new QuestionWrapper(
+                                    qn.getId(),
+                                    qn.getQuestionTitle(),
+                                    qn.getOption1(),
+                                    qn.getOption2(),
+                                    qn.getOption3(),
+                                    qn.getOption4()
+                            ))
+                            .toList();
 
-        List<Question> questionList = result.get().getQuestionList();
-        List<QuestionWrapper> questionWrapperList = new ArrayList<>();
+                    return new ResponseEntity<>(wrappers, HttpStatus.OK);
 
-        for (Question qn : questionList) {
-            QuestionWrapper qw = new QuestionWrapper(qn.getId(),qn.getQuestionTitle(),qn.getOption1(),qn.getOption2(),qn.getOption3(),qn.getOption4());
-            questionWrapperList.add(qw);
-        }
-        return new ResponseEntity<>(questionWrapperList, HttpStatus.OK);
+                })
+                // If the quiz doesn't exist in the database, safely return a 404 Not Found
+                .orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
     public ResponseEntity<Integer> calculateResult(int id, List<Response> responses) {
