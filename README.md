@@ -637,7 +637,7 @@ The execution follows this specific logic branch:
 2. `.map(...)` checks the box:
 - You don't need to write `.map(Quiz quiz) -> { ... }` because Java uses **Type Inference**.
 - Because `findById(id)` explicitly returns an `Optional<Quiz>` wrapper box, Java's compiler already knows with 100% certainty that the **only** thing that can possibly be inside that box is a Quiz object.
-- The `quiz.getQuestionList().stream()` produces an assembly line of questions. When the constructor of the new instance of QuestionWrapper is run each parameter value comes from the getter of the specific property of the question that qn is currently pointing to. The Item Arrives: The stream takes the first full database Question object from your list and sets qn to point directly to it.
+- The `quiz.getQuestionList().stream()` produces an assembly line of questions. The Item Arrives: The stream takes the first full database Question object from your list and sets qn to point directly to it. When the constructor of the new instance of QuestionWrapper is run each parameter value comes from the getter of the specific property of the question that qn is currently pointing to.
 - If a Quiz is present: It opens the box, runs your transformation code inside the curly braces to convert the quiz into a ResponseEntity, and puts that new response entity back inside an Optional box.
 - If the box is empty: It skips your transformation logic entirely and just passes along the empty Optional box.
 3. `.orElse(...)` looks at the final box:
