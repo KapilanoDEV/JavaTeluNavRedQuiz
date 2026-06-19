@@ -8,11 +8,9 @@ import lombok.Data;
 // for a quiz you don't want to give the interviewee the rightAnswer, the category is not necessary,
 // nor the difficultyLevel
 
-@Entity
 @Data
 public class QuestionWrapper {
-    @Id
-    private int id;
+
 
     private String questionTitle;
 
@@ -22,7 +20,7 @@ public class QuestionWrapper {
     private String option4;
 
     public QuestionWrapper(int id, String questionTitle, String option1, String option2, String option3, String option4) {
-        this.id = id;
+
         this.questionTitle = questionTitle;
         this.option1 = option1;
         this.option2 = option2;
