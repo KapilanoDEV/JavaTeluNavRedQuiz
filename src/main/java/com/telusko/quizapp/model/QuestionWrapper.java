@@ -4,7 +4,9 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import lombok.Data;
 
-// This model is needed by the
+// This model is needed because when you get the questions
+// for a quiz you don't want to give the interviewee the rightAnswer, the category is not necessary,
+// nor the difficultyLevel
 
 @Entity
 @Data

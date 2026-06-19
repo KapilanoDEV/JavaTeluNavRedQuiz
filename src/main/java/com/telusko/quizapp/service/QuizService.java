@@ -39,7 +39,7 @@ public class QuizService {
 
     public ResponseEntity<List<QuestionWrapper>> getQuiz(int id) {
         return quizdao.findById(id)
-                .map(quiz -> {
+                .map(quiz -> { // Java infers that 'quiz' is a 'Quiz' object!
                     List<QuestionWrapper> wrappers = quiz.getQuestionList().stream()
                             .map(qn -> new QuestionWrapper(
                                     qn.getId(),
