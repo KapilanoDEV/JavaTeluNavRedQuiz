@@ -11,9 +11,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
+
 
 @Service
 public class QuizService {
@@ -59,19 +59,24 @@ public class QuizService {
     }
 
     public ResponseEntity<Integer> calculateResult(int id, List<Response> responses) {
-        Optional<Quiz> quiz = quizdao.findById(id); // id=1, category=Java, quiz_title=JQuiz
 
-        List<Question> questionList = quiz.get().getQuestionList();
-        int i = 0;
-        String answer;
-        int points=0;
-        for (Response response : responses) {
-            answer = questionList.get(i).getRightAnswer();
-            i++;
 
-            if (response.getResponse().equals(answer))
-                points++;
-        }
-        return new ResponseEntity<>(points, HttpStatus.OK);
+        return quizdao.findById(id)
+                .map(quiz -> {
+                    // 1. Transform the database questions into a high-speed lookup Map: Id -> RightAnswer
+                    Map<Integer,String> responseMap = quiz.getQuestionList().stream()
+                            .collect(Collectors.toMap(Question::getId, Question::getRightAnswer));
+                    // 2. Stream through incoming user responses, filter out correct ones, and count them
+                    long correctCount = responses.stream()
+                            .filter(resp -> {
+                                String correctAnswer = responseMap.get(resp.getId());
+                                return correctAnswer != null && correctAnswer.equals(resp.getResponse());
+                            })
+                            .count();
+                    // 3. Return the total score cast safely to an Integer
+                    return ResponseEntity.ok((int) correctCount); // 🛠️ Returns a ResponseEntity<Integer> with 200 OK
+                })
+                // If the quiz doesn't exist, return 404 Not Found
+                .orElse(ResponseEntity.notFound().build());
     }
 }
