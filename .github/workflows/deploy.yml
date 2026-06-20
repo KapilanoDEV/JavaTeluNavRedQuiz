@@ -47,14 +47,10 @@ jobs:
     runs-on: self-hosted 
     needs: build-and-push
     steps:
-    - name: SSH and Deploy to Photon OS VM
-      uses: appleboy/ssh-action@v1.0.3
-      with:
-        host: ${{ secrets.VM_HOST }}
-        username: ${{ secrets.VM_USER }}
-        key: ${{ secrets.VM_SSH_KEY }}
-        script: |
-          # Log into Docker Hub securely
+    - name: SSH and Deploy via Native Terminal
+      run: |
+        ssh -o StrictHostKeyChecking=no amit@192.168.237.133 << 'EOF'
+          # Log into Docker Hub securely inside the VM
           echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
           
           # Pull down the freshly built image
@@ -70,3 +66,4 @@ jobs:
             -p 8080:8080 \
             --restart always \
             ${{ secrets.DOCKERHUB_USERNAME }}/quizapp:latest
+        EOF
