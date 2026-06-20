@@ -31,6 +31,7 @@
     - [Production-Ready Safety Upgrade for getQuiz](#production-ready-safety-upgrade-for-getquiz)
       - [The Conceptual Difference](#the-conceptual-difference)
       - [How `.orElse()` Operates on an Optional](#how-orelse-operates-on-an-optional)
+  - [Configure CI/CD pipeline](#configure-cicd-pipeline)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -643,3 +644,5 @@ The execution follows this specific logic branch:
 3. `.orElse(...)` looks at the final box:
 - If the box is full: It unwraps the object inside (your successful 200 OK response) and returns it.
 - If the box is empty: It ignores the box entirely and returns your fallback value (the 404 NOT FOUND response) instead.
+
+## Configure CI/CD pipeline
